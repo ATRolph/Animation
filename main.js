@@ -151,7 +151,8 @@ BoundingBox.prototype.onCollide = function(Object) {
 function Cube(game) {
     cubeSlideRightBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 14, true, false);
     cubeSlideLeftBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_left.png"), 0, 0, 64, 64, 0.10, 14, true, false);
-    this.animation = cubeSlideRightBeginning;
+    cubeStill = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 1, true, false);
+    this.animation = cubeStill;
     cubeRightSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, false);
     cubeLeftSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, true);
     this.jumpAnimation = cubeRightSpin;
@@ -208,9 +209,13 @@ Cube.prototype.draw = function (ctx) {
         }
         this.x += 3;
     }
+    if (!this.game.a && !this.game.d) {
+        this.animation = cubeStill;
+    }
     if (this.jumping) {
         this.jumpAnimation.drawFrame(this.game.clockTick, ctx, this.x, this.y, 3);
     } else {
+        
         this.animation.drawFrame(this.game.clockTick, ctx, this.x, this.y, 3);
     }     
     ctx.lineWidth = 5;
