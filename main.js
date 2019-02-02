@@ -151,7 +151,7 @@ BoundingBox.prototype.onCollide = function(Object) {
 function Cube(game) {
     cubeSlideRightBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 14, true, false);
     cubeSlideLeftBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_left.png"), 0, 0, 64, 64, 0.10, 14, true, false);
-    cubeStill = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 1, true, false);
+    cubeStill = new Animation(ASSET_MANAGER.getAsset("./img/cube_idle.png"), 0, 0, 64, 64, 0.10, 14, true, false);
     this.animation = cubeStill;
     cubeRightSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, false);
     cubeLeftSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, true);
@@ -308,6 +308,7 @@ var ASSET_MANAGER = new AssetManager();
 ASSET_MANAGER.queueDownload("./img/cube_jump.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_right.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_left.png");
+ASSET_MANAGER.queueDownload("./img/cube_idle.png");
 ASSET_MANAGER.queueDownload("./img/block.png");
 ASSET_MANAGER.queueDownload("./img/spike.png");
 ASSET_MANAGER.queueDownload("./img/fire.png");
