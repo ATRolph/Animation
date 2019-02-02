@@ -215,12 +215,40 @@ Cube.prototype.draw = function (ctx) {
     if (this.jumping) {
         this.jumpAnimation.drawFrame(this.game.clockTick, ctx, this.x, this.y, 3);
     } else {
-        
         this.animation.drawFrame(this.game.clockTick, ctx, this.x, this.y, 3);
     }     
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'blue';
     // ctx.strokeRect(this.x + 64, this.y + 64, this.animation.frameWidth, this.animation.frameHeight);   
+    Entity.prototype.draw.call(this);
+}
+
+function Laser(game, cube) {
+    laserLeft = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .1, 4, true, false);
+    laserRight = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .1, 4, true, true);
+    offSet = 128;
+    this.animation = laserRight;
+    Entity.call(this, game, 0, 0);
+}
+
+Laser.prototype = new Entity();
+Laser.prototype.constructor = Laser;
+
+Laser.prototype.update = function () {
+    Entity.prototype.update.call(this);
+}
+
+Laser.prototype.draw = function (ctx) {
+    if (this.game.entities[4].animation === cubeSlideLeftBeginning) {
+        offSet = -576;
+        this.animation = laserLeft;
+    } else if (this.game.entities[4].animation === cubeSlideRightBeginning) {
+        offSet = 128;
+        this.animation = laserRight;
+    }
+    if (this.game.space && !this.game.entities[4].jumping) {   
+        this.animation.drawFrame(this.game.clockTick, ctx, this.game.entities[4].x + offSet, this.game.entities[4].y - 225, 10);
+    } 
     Entity.prototype.draw.call(this);
 }
 
@@ -309,6 +337,7 @@ ASSET_MANAGER.queueDownload("./img/cube_jump.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_right.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_left.png");
 ASSET_MANAGER.queueDownload("./img/cube_idle.png");
+ASSET_MANAGER.queueDownload("./img/laser.png");
 ASSET_MANAGER.queueDownload("./img/block.png");
 ASSET_MANAGER.queueDownload("./img/spike.png");
 ASSET_MANAGER.queueDownload("./img/fire.png");
@@ -328,7 +357,8 @@ ASSET_MANAGER.downloadAll(function () {
     gameEngine.addEntity(new Demon(gameEngine, ASSET_MANAGER.getAsset("./img/demon.png")));
     gameEngine.addEntity(new Foreground(gameEngine, ASSET_MANAGER.getAsset("./img/transparent_bg.png")));
     gameEngine.addEntity(new Fire(gameEngine));
-    gameEngine.addEntity(new Cube(gameEngine));
+    gameEngine.addEntity(new Cube(gameEngine));    
+    gameEngine.addEntity(new Laser(gameEngine));
     gameEngine.addEntity(new Crate(gameEngine));
     gameEngine.addEntity(new Spike(gameEngine));
 });
