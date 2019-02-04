@@ -36,12 +36,10 @@ Animation.prototype.drawFrame = function (tick, ctx, x, y, scaleBy) {
     var locX = x;
     var locY = y;
     var offset = vindex === 0 ? this.startX : 0;
-    ctx.drawImage(this.spriteSheet,
-                  index * this.frameWidth + offset, vindex * this.frameHeight + this.startY,  // source from sheet
-                  this.frameWidth, this.frameHeight,
-                  locX, locY,
-                  this.frameWidth * scaleBy,
-                  this.frameHeight * scaleBy);
+    ctx.drawImage(this.spriteSheet, index * this.frameWidth + offset, 
+    vindex * this.frameHeight + this.startY,  // source from sheet
+    this.frameWidth, this.frameHeight, locX, locY,
+    this.frameWidth * scaleBy, this.frameHeight * scaleBy);
 }
 
 Animation.prototype.currentFrame = function () {
@@ -59,8 +57,6 @@ function Background(game, spritesheet) {
     this.spritesheet = spritesheet;
     this.game = game;
     this.ctx = game.ctx;
-    // Entity.call(this, game, 0, 400);
-    this.radius = 200;
 };
 
 Background.prototype.draw = function () {
@@ -149,17 +145,19 @@ BoundingBox.prototype.onCollide = function(Object) {
 }
 
 function Cube(game) {
-    cubeSlideRightBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 14, true, false);
-    cubeSlideLeftBeginning = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_left.png"), 0, 0, 64, 64, 0.10, 14, true, false);
+    cubeRightSlide = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_right.png"), 0, 0, 64, 64, 0.10, 14, true, false);
+    cubeLeftSlide = new Animation(ASSET_MANAGER.getAsset("./img/cube_slide_left.png"), 0, 0, 64, 64, 0.10, 14, true, false);
     cubeStill = new Animation(ASSET_MANAGER.getAsset("./img/cube_idle.png"), 0, 0, 64, 64, 0.10, 14, true, false);
-    this.animation = cubeStill;
     cubeRightSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, false);
     cubeLeftSpin = new Animation(ASSET_MANAGER.getAsset("./img/cube_jump.png"), 0, 0, 64, 64, 0.08, 8, false, true);
+    cubeRightLaser = new Animation(ASSET_MANAGER.getAsset("./img/cube_right_laser.png"), 0, 0, 64, 64, 0.08, 8, true, false);
+    cubeLeftLaser = new Animation(ASSET_MANAGER.getAsset("./img/cube_left_laser.png"), 0, 0, 64, 64, 0.08, 8, true, false);
+    cubeStillLaser =  new Animation(ASSET_MANAGER.getAsset("./img/cube_idle_laser.png"), 0, 0, 64, 64, 0.08, 4, true, false);
+    this.animation = cubeStill;
     this.jumpAnimation = cubeRightSpin;
-    this.jumping = false;
     this.boundingbox = new BoundingBox(this.x + 64, this.y + 64, this.animation.frameWidth, this.animation.frameHeight);
     this.ground = 350;
-    Entity.call(this, game, 336, 350);
+    Entity.call(this, game, 300, 350);
 }
 
 Cube.prototype = new Entity();
@@ -176,10 +174,9 @@ Cube.prototype.update = function () {
         }
         var jumpDistance = this.jumpAnimation.elapsedTime / this.jumpAnimation.totalTime;
         var totalHeight = 200;
-
-        if (jumpDistance > 0.5)
+        if (jumpDistance > 0.5) {
             jumpDistance = 1 - jumpDistance;
-
+        }
         var height = totalHeight * (-4 * (jumpDistance * jumpDistance - jumpDistance));
         this.y = this.ground - height;
     }  
@@ -196,21 +193,32 @@ Cube.prototype.update = function () {
 
 Cube.prototype.draw = function (ctx) {
     if (this.game.a && !this.game.d) {
-        this.animation = cubeSlideLeftBeginning;
+        if (this.game.space) {
+            this.animation = cubeLeftLaser;
+        } else {
+            this.animation = cubeLeftSlide;
+        }
         if (!this.jumping) {
             this.jumpAnimation = cubeLeftSpin;
         }
         this.x -= 3;
-    } 
-    if (this.game.d && !this.game.a) {
-        this.animation = cubeSlideRightBeginning;
+    } else if (this.game.d && !this.game.a) {
+        if (this.game.space) {
+            this.animation = cubeRightLaser;
+        } else {
+            this.animation = cubeRightSlide;
+        }
         if (!this.jumping) {
             this.jumpAnimation = cubeRightSpin;
         }
         this.x += 3;
-    }
-    if (!this.game.a && !this.game.d) {
-        this.animation = cubeStill;
+    } else {
+        if (this.game.space) {
+            this.animation = cubeStillLaser;
+        } else {
+            this.animation = cubeStill;;
+        }
+        
     }
     if (this.jumping) {
         this.jumpAnimation.drawFrame(this.game.clockTick, ctx, this.x, this.y, 3);
@@ -224,9 +232,9 @@ Cube.prototype.draw = function (ctx) {
 }
 
 function Laser(game, cube) {
-    laserLeft = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .1, 4, true, false);
-    laserRight = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .1, 4, true, true);
-    offSet = 128;
+    laserLeft = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .2, 4, true, false);
+    laserRight = new Animation(ASSET_MANAGER.getAsset("./img/laser.png"), 0, 0, 64, 64, .2, 4, true, true);
+    offSet = 100;
     this.animation = laserRight;
     Entity.call(this, game, 0, 0);
 }
@@ -239,15 +247,17 @@ Laser.prototype.update = function () {
 }
 
 Laser.prototype.draw = function (ctx) {
-    if (this.game.entities[4].animation === cubeSlideLeftBeginning) {
-        offSet = -576;
+    if (this.game.entities[4].animation === cubeLeftLaser ||
+        this.game.entities[4].animation === cubeLeftSlide) {
+        offSet = -165;
         this.animation = laserLeft;
-    } else if (this.game.entities[4].animation === cubeSlideRightBeginning) {
-        offSet = 128;
+    } else if (this.game.entities[4].animation === cubeRightLaser ||
+        this.game.entities[4].animation === cubeRightSlide) {
+        offSet = 100;
         this.animation = laserRight;
     }
     if (this.game.space && !this.game.entities[4].jumping) {   
-        this.animation.drawFrame(this.game.clockTick, ctx, this.game.entities[4].x + offSet, this.game.entities[4].y - 225, 10);
+        this.animation.drawFrame(this.game.clockTick, ctx, this.game.entities[4].x + offSet, this.game.entities[4].y - 20, 4);
     } 
     Entity.prototype.draw.call(this);
 }
@@ -267,9 +277,6 @@ Crate.prototype.update = function () {
 }
 
 Crate.prototype.draw = function (ctx) {
-    if(this.x < -64) {
-        this.x = 800;
-    }
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'blue';
     // ctx.strokeRect(this.x + 64, this.y + 64, this.animation.frameWidth, this.animation.frameHeight);
@@ -298,9 +305,6 @@ Spike.prototype.update = function () {
 }
 
 Spike.prototype.draw = function (ctx) {
-    if(this.x < -64) {
-        this.x = 800;
-    }
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'blue';
     // ctx.strokeRect(this.x + 64, this.y + 64, this.animation.frameWidth, this.animation.frameHeight);
@@ -336,7 +340,10 @@ var ASSET_MANAGER = new AssetManager();
 ASSET_MANAGER.queueDownload("./img/cube_jump.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_right.png");
 ASSET_MANAGER.queueDownload("./img/cube_slide_left.png");
+ASSET_MANAGER.queueDownload("./img/cube_right_laser.png");
+ASSET_MANAGER.queueDownload("./img/cube_left_laser.png");
 ASSET_MANAGER.queueDownload("./img/cube_idle.png");
+ASSET_MANAGER.queueDownload("./img/cube_idle_laser.png");
 ASSET_MANAGER.queueDownload("./img/laser.png");
 ASSET_MANAGER.queueDownload("./img/block.png");
 ASSET_MANAGER.queueDownload("./img/spike.png");
